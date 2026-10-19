@@ -1,0 +1,22 @@
+{
+    "name": "php-baremetal/ext-web",
+    "description": "Baremetal\\Http\\Request/Response + serve_http()/serve_ws() (the event-driven web source). The arch HTTP-server HAL is a separate package.",
+    "type": "bm-ext",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gianfrancesco Aurecchia",
+            "email": "gianfri@aurecchia.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "php-baremetal/ext-events": "^1.0",
+        "php-baremetal/web-hal": "^1.0"
+    },
+    "extra": {
+        "baremetal": {
+            "module": "web"
+        }
+    }
+}
