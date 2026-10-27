@@ -35,7 +35,7 @@ server a network interface, then `serve_http()` serves a page with a form.
   },
   "extra": {
     "baremetal": {
-      "sdk": "esp32@^1.0",
+      "sdk": "esp32@^2.0",
       "board": "waveshare-esp32-s3-zero-n8r8",
       "runtime": "event-driven",
       "storage": "embedded"

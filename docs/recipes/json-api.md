@@ -35,7 +35,7 @@ answers 500 without stopping the server.
   },
   "extra": {
     "baremetal": {
-      "sdk": "esp32@^1.0",
+      "sdk": "esp32@^2.0",
       "board": "waveshare-esp32-s3-eth",
       "runtime": "event-driven",
       "storage": "embedded",
