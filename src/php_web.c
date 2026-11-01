@@ -70,15 +70,25 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_resp_ctor, 0, 0, 0)
     ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, contentType, IS_STRING, 0, "\"text/html; charset=UTF-8\"")
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_resp_body, 0, 0, 0)
+/* The static factories return a new Response. ok() and notFound() take an optional body, text() and html() a
+ * required one. */
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_resp_body_opt, 0, 0, Baremetal\\Http\\Response, 0)
     ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, body, IS_STRING, 0, "\"\"")
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_resp_none, 0, 0, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_resp_not_found, 0, 0, Baremetal\\Http\\Response, 0)
+    ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, body, IS_STRING, 0, "\"Not Found\"")
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_resp_json, 0, 0, 1)
-    ZEND_ARG_INFO(0, data)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_resp_body, 0, 1, Baremetal\\Http\\Response, 0)
+    ZEND_ARG_TYPE_INFO(0, body, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_resp_none, 0, 0, Baremetal\\Http\\Response, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_resp_json, 0, 1, Baremetal\\Http\\Response, 0)
+    ZEND_ARG_TYPE_INFO(0, data, IS_MIXED, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_resp_header, 0, 2, IS_STATIC, 0)
@@ -278,11 +288,11 @@ PHP_METHOD(Response, header)
 
 static const zend_function_entry response_methods[] = {
     PHP_ME(Response, __construct, arginfo_resp_ctor, ZEND_ACC_PUBLIC)
-    PHP_ME(Response, ok,        arginfo_resp_body, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(Response, ok,        arginfo_resp_body_opt, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(Response, text,      arginfo_resp_body, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(Response, html,      arginfo_resp_body, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(Response, json,      arginfo_resp_json, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(Response, notFound,  arginfo_resp_body, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(Response, notFound,  arginfo_resp_not_found, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(Response, noContent, arginfo_resp_none, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(Response, header,    arginfo_resp_header, ZEND_ACC_PUBLIC)
     PHP_FE_END
