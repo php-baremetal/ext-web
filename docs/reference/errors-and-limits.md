@@ -54,6 +54,6 @@ Raised while the response is copied out, after the listener returned:
 | Inbound frame wait for queue room | 2 s, then dropped | esp32-web-hal |
 | Stuck outbound send | dropped after 2 s | esp32-web-hal |
 | Open sockets | the `esp_http_server` default; the least recently used is closed when full | esp32-web-hal |
-| Event queue | 32 messages, shared with all events | ext-events |
+| Event slots | each request and frame takes one small slot (`events-small`, 64 by default), shared with all events | ext-events |
 
 The server never stops once started: there is no `stop` function, and it lives until the board restarts.

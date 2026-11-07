@@ -32,7 +32,8 @@ next: { label: 'Errors and limits', href: './errors-and-limits.md' }
 <!-- @endsteps -->
 
 The server task handles one request at a time: while it waits for PHP it serves nothing else. A request that
-arrives while the event queue (32 messages, shared with every other event) is full is answered 503 at once.
+arrives while no small event slot is free (`events-small`, 64 by default, shared with every other event) is
+answered 503 at once, and counted as a drop of `Baremetal\Http\Request` in `Events::stats()`.
 
 ## Status codes the server sends itself
 
@@ -41,7 +42,7 @@ arrives while the event queue (32 messages, shared with every other event) is fu
 | Request header block over 2048 bytes | 431 |
 | Body larger than `post_max_size` | 413 |
 | Body not received within 10 s plus 1 s per 16 KB | 408 (400 if the connection failed) |
-| Event queue full, or no memory for the request | 503 |
+| No free small event slot, or no memory for the request | 503 |
 | No answer from PHP within `request-timeout` + 5 s | 503 |
 | The program has stopped | 503 |
 

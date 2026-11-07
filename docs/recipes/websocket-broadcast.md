@@ -81,5 +81,5 @@ next tick, while only the clicking tab sees the `ack`.
 - `ws_broadcast()` queues one frame for every connected client and returns at once. A tab that cannot take
   data at that moment misses this frame, so each frame carries the whole state rather than a change.
 - The `Beat`, `Message` and `Request` listeners never run at the same time, so `$state` needs no locking.
-- Frames, requests and timer ticks share one 32-message queue: keep the broadcast rate in the tens per
-  second at most.
+- Frames, requests and timer ticks share the small event slots (`events-small`, 64 by default): keep the
+  broadcast rate in the tens per second at most.

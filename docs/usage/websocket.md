@@ -86,8 +86,8 @@ serve_http(80);
 
 ## Flow control
 
-- **Inbound.** When the event queue is full, the server task waits up to 2 s for room before reading on, so
-  TCP slows the sender; only then is the frame dropped.
+- **Inbound.** When no small event slot is free, the server task waits up to 2 s for one before reading on,
+  so TCP slows the sender; only then is the frame dropped (counted in `Events::stats()`).
 - **Outbound.** `reply()` and `ws_broadcast()` hand the frame to the server task and return at once; replies
   and broadcasts are always text frames.
 - **Closing.** Clients are not notified when the program stops; their connections end when the board
