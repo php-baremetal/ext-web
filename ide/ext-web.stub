@@ -1,0 +1,243 @@
+<?php
+// php-baremetal/ext-web 1.1.0 — IDE helper, not loaded at runtime.
+
+namespace Baremetal\Http {
+    /**
+     * An HTTP request, delivered to the Events::listen(Request::class, ...) listeners; the first listener that
+     * returns an object answers it.
+     */
+    class Request extends \Baremetal\Event
+    {
+        /**
+         * GET, POST, PUT, PATCH, DELETE, HEAD or OPTIONS.
+         *
+         * @var string
+         */
+        public $method = 'GET';
+
+        /**
+         * The path without the query string, e.g. /api/items; at most 255 bytes, longer is truncated.
+         *
+         * @var string
+         */
+        public $path = '/';
+
+        /**
+         * The raw query string without ?; at most 255 bytes.
+         *
+         * @var string
+         */
+        public $query = '';
+
+        /**
+         * The whole request body ('' when there is none).
+         *
+         * @var string
+         */
+        public $body = '';
+
+        /**
+         * The client's IP address (an IPv4 client is shown as plain IPv4).
+         *
+         * @var string
+         */
+        public $ip = '';
+
+        /**
+         * The captured request headers, name to value: Host, Content-Type, User-Agent, Accept, Cookie,
+         * Authorization, X-Requested-With, Accept-Language (null in a Request created with new).
+         *
+         * @var array|null
+         */
+        public $headers = null;
+
+        /**
+         * The body decoded as JSON, as json_decode($this->body, true).
+         *
+         * @return mixed The body as an associative array, or null when it is not valid JSON.
+         */
+        public function json(): mixed {}
+
+        /**
+         * One captured header by name, case-insensitively.
+         *
+         * @param string $name The header name, e.g. 'Content-Type'.
+         * @return string|null The value, or null when the header was not captured.
+         */
+        public function header(string $name): ?string {}
+    }
+
+    /**
+     * An HTTP response: return it from a Request listener; the reply is built from its public properties.
+     */
+    class Response
+    {
+        /**
+         * The status code; outside 100 to 599 it is sent as 500.
+         *
+         * @var int
+         */
+        public $status = 200;
+
+        /**
+         * The body.
+         *
+         * @var string
+         */
+        public $body = '';
+
+        /**
+         * The content type; at most 127 bytes are sent.
+         *
+         * @var string
+         */
+        public $contentType = 'text/html; charset=UTF-8';
+
+        /**
+         * The extra response headers: name to value, or name to a list of values (at most 16 are sent).
+         *
+         * @var array
+         */
+        public $headers = [];
+
+        /**
+         * Creates a response.
+         *
+         * @param int $status The status code.
+         * @param string $body The body.
+         * @param string $contentType The content type.
+         */
+        public function __construct(int $status = 200, string $body = '', string $contentType = 'text/html; charset=UTF-8') {}
+
+        /**
+         * A 200 response with the content type text/html; charset=UTF-8.
+         *
+         * @param string $body The body.
+         * @return Response The new response.
+         */
+        public static function ok(string $body = ''): Response {}
+
+        /**
+         * A 200 response with the content type text/plain; charset=UTF-8.
+         *
+         * @param string $body The body.
+         * @return Response The new response.
+         */
+        public static function text(string $body): Response {}
+
+        /**
+         * A 200 response with the content type text/html; charset=UTF-8.
+         *
+         * @param string $body The body.
+         * @return Response The new response.
+         */
+        public static function html(string $body): Response {}
+
+        /**
+         * A 200 response with the content type application/json and the body json_encode($data).
+         *
+         * @param mixed $data The value to encode; the body is '' when encoding fails.
+         * @return Response The new response.
+         */
+        public static function json(mixed $data): Response {}
+
+        /**
+         * A 404 response with the content type text/plain; charset=UTF-8.
+         *
+         * @param string $body The body.
+         * @return Response The new response.
+         */
+        public static function notFound(string $body = 'Not Found'): Response {}
+
+        /**
+         * A 204 response with an empty body.
+         *
+         * @return Response The new response.
+         */
+        public static function noContent(): Response {}
+
+        /**
+         * Sets a response header on this object; Content-Type sets $contentType.
+         *
+         * @param string $name The header name, a valid token; not Content-Length or Transfer-Encoding.
+         * @param string $value The value, without CR, LF or NUL.
+         * @param bool $replace false keeps an existing header of the same name and sends this value as well.
+         * @return static This response, so calls chain.
+         * @throws \ValueError For an invalid name, a header the server sets, or a value with CR, LF or NUL.
+         */
+        public function header(string $name, string $value, bool $replace = true): static {}
+    }
+
+    /**
+     * A WebSocket frame, delivered to the Events::listen(Message::class, ...) listeners for every endpoint;
+     * empty frames are not delivered.
+     */
+    class Message extends \Baremetal\Event
+    {
+        /**
+         * The frame payload.
+         *
+         * @var string
+         */
+        public $text = '';
+
+        /**
+         * The connection's id: positive, never reused until a restart; 0 when the connection could not be
+         * tracked (more than 16 open).
+         *
+         * @var int
+         */
+        public $client = 0;
+
+        /**
+         * true for a binary frame (the payload is still in $text).
+         *
+         * @var bool
+         */
+        public $binary = false;
+
+        /**
+         * Queues a text frame to the client this message came from.
+         *
+         * @param string $data The frame payload.
+         * @return bool false when the client is gone, is not tracked or the send could not be queued.
+         */
+        public function reply(string $data): bool {}
+    }
+}
+
+namespace {
+    /**
+     * Starts the HTTP server and routes every path and method to the Baremetal\Http\Request listeners.
+     *
+     * Call it from the top-level script, after the Request listener is registered and the network is up.
+     *
+     * @param int $port TCP port, 1 to 65535.
+     * @return bool true; a second call with the same port does nothing.
+     * @throws \ValueError When $port is outside 1 to 65535.
+     * @throws \Exception When the server already runs on another port (an earlier serve_http(), or serve_ws() on
+     *                    port 80), there is no network interface, or the server or its routes cannot start.
+     */
+    function serve_http(int $port = 80): bool {}
+
+    /**
+     * Adds a WebSocket endpoint on the HTTP server; each inbound frame is a Baremetal\Http\Message event.
+     *
+     * If serve_http() has not run yet, it starts the server on port 80, and a later serve_http() with another
+     * port then throws; for another port, call serve_http($port) first.
+     *
+     * @param string $path The exact path of the endpoint, e.g. '/ws'.
+     * @return bool true.
+     * @throws \Exception When there is no network interface, the server cannot start, or the path is taken or
+     *                    every route slot is used.
+     */
+    function serve_ws(string $path = '/ws'): bool {}
+
+    /**
+     * Queues one text frame for every connected WebSocket client; a client that cannot take data is skipped.
+     *
+     * @param string $data The frame payload.
+     * @return int How many clients were connected when it was queued (0 when none or the queue is full).
+     */
+    function ws_broadcast(string $data): int {}
+}

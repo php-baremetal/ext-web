@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.0.3
+## 1.1.0
 
+- Added: ide/ext-web.stub, the PHP declarations of the package for IDEs (conductor copies it into vendor/php-baremetal/ide-stubs/).
 - Docs: requests and WebSocket frames take a small event slot of ext-events 1.1.0 (`events-small`), no
   longer a place in a 32-message queue; a request with no free slot is answered 503 and counted in
   `Events::stats()`.

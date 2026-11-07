@@ -16,7 +16,8 @@
     },
     "extra": {
         "baremetal": {
-            "module": "web"
+            "module": "web",
+            "ide-stubs": ["ide/ext-web.stub"]
         }
     }
 }
